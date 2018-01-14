@@ -1,0 +1,179 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<style>
+	table{
+		border: 1px solid black;
+	}
+	tr{
+	
+	}
+	td{
+		border: 1px solid black;
+		padding: 50px;
+		margin:0;
+	}
+</style>
+<script>
+//model
+var input = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+var hidden1 = [0,0,0,0,0,0,0,0];
+var hidden2 = [0,0,0,0,0,0,0,0];
+var output = 0;
+
+var input_to_hidden1W = 
+[[0.3285862505,0.5037218928,0.2000737935,-0.2726771533,0.1376596242,-0.8561996818,-0.9165353775,0.2883826792],[
+-0.3355768323,0.8266085982,-0.4416609108,-0.0408226959,-0.3150069714,-0.2042978257,-0.2131740004,-0.2850708961],[
+0.3704091609,-0.2359474003,0.4357635975,0.0407554582,0.3340401947,0.3197601736,0.2832878232,0.3865770400],[
+0.4095553756,0.2861907482,-0.1995381415,0.2726193666,0.2132836878,-0.8989189863,-0.9560559988,0.3736346662],[
+-0.0019270704,0.1366973817,-0.5064343214,0.5317490697,0.1535922140,0.0336072668,0.0725339726,0.0512912162],[
+-0.0411665998,0.2178481072,0.7059831619,-0.6636405587,0.1907650381,0.1576724499,0.1187333912,-0.0264372565],[
+0.0672563612,0.3276995122,-0.7073238492,0.6642135978,-0.1772847623,-0.0869262442,-0.0999634787,0.0923913643],[
+-0.0050477674,0.5295516849,0.4989170134,-0.5309315920,-0.0496460311,-0.0773612261,-0.0323251449,0.0223938338],[
+0.0122818146,0.4220296443,0.1413477361,-0.1782203466,0.0541551635,-0.0229880437,-0.0383394286,0.0050614523],[
+-0.3817387521,0.8298373818,-0.2853731811,-0.3626013398,-0.3477533162,-0.3481735289,-0.3053425550,-0.3560680151],[
+0.4534558654,-0.0672358200,0.2722811103,0.3648341000,0.4039574862,0.3491437435,0.3651193082,0.4105950296],[
+0.0842664316,0.1837055683,-0.1396147311,0.1796026230,0.0350716598,0.0542192757,0.0233370066,0.0342274159],[
+-0.0152567318,0.4845058918,-0.3563116193,0.3200806081,0.1886838973,-0.0100639621,0.0265028179,-0.0128713464],[
+0.5536957979,0.2176214457,-0.2072015107,0.4516626298,-1.1180524826,0.1977514476,0.1701432317,0.5026392341],[
+0.1648486555,0.5913935900,0.2129858434,-0.4508111179,-1.2139968872,-0.0779697299,-0.0776410699,0.1708900779],[
+0.1224253774,0.4564003348,0.3527374566,-0.3207756579,-0.1276671737,0.0303657781,0.0585188307,0.0946966931]];
+
+var hidden1W = [-0.4376775324,0.9593348503,0.0055897357,-0.0043636877,0.4306731820,0.4339315891,0.4792157710,-0.4603955746];
+
+var hidden1_to_hidden2W = 
+[[0.7392963767,0.7724958658,-0.0102956071,-0.4831251800,0.7205793858,0.7082085013,-0.4203652143,0.7765023708],[
+-0.0716538727,-0.0647061169,-0.0020561218,0.5054157376,-0.0767271221,-0.0885488763,0.4814118147,-0.0883249193],[
+-4.5157036781,-4.5650978088,-0.0160066616,4.5582609177,-4.5225963593,-4.4612188339,4.4324827194,-4.5343708992],[
+-4.3567466736,-4.4045047760,-0.0136212474,4.2867188454,-4.3260946274,-4.3756957054,4.2813019753,-4.3557600975],[
+0.9402168989,0.8957405686,-0.0151498737,-0.7177137136,0.9605186582,0.9680128098,-0.7453495264,0.9806123972],[
+0.7018342018,0.7028021812,0.0019644313,-0.5530469418,0.6990578771,0.7410901189,-0.5192782879,0.6906430125],[
+0.7675226331,0.7581371069,-0.0336474031,-0.6311428547,0.7663168907,0.7129747272,-0.5592955947,0.7600700855],[
+0.7668216825,0.7759104967,-0.0284497552,-0.6602233648,0.7834833264,0.7962322831,-0.6711813807,0.7679450512]];
+
+var hidden2W = [-0.3177977204,-0.3238071203,-0.0055553457,0.6321878433,-0.3083994389,-0.2777270079,0.6204734445,-0.2846483588];
+
+var hidden2_to_outputW = [3.3840982914,3.2790484428,0.0275279246,-2.4290223122,3.4360733032,3.5410392284,-2.4601557255,3.4946498871];
+
+var outputW = -0.4152299464;
+
+
+
+
+var image = [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false];
+window.onload = function() {
+  vykreslit();
+};
+function vykreslit() {
+	for (i = 0; i < 16; i++) {
+		if(image[i]){
+			document.getElementById(i).style.backgroundColor = "red";			
+			document.getElementById(i).innerHTML = '<td id="'+i+'"><button type="button" onclick="change('+i+')">1</button></td>';
+		}
+		else{
+			document.getElementById(i).style.backgroundColor = "blue";
+			document.getElementById(i).innerHTML = '<td id="'+i+'"><button type="button" onclick="change('+i+')">0</button></td>';
+		}
+	}
+}
+
+function change(id){
+	image[id] = !image[id];
+	vykreslit();
+	vyhodnotit();
+}
+
+function vyhodnotit(){
+	//input
+	for (i = 0; i < 16; i++) {
+		if(image[i]){
+			input[i] = 1;
+		}
+		else{
+			input[i] = 0;
+		}
+	}
+	//hidden 1
+	for (h = 0; h < 8; h++) {
+		for (i = 0; i < 16; i++) {
+			hidden1[h] += input[i]*input_to_hidden1W[i][h];
+		}
+		//hidden1[h] *= hidden1W[h];
+		//relu
+		hidden1[h] = Math.max(0,hidden1[h]);
+	}
+	//hidden 2
+	for (ho = 0; ho < 8; ho++) {
+		for (hi = 0; hi < 8; hi++) {
+			hidden2[ho] += hidden1[hi]*hidden1_to_hidden2W[hi][ho];
+		}
+		//hidden2[ho] *= hidden2W[ho];
+		//relu
+		hidden2[ho] = Math.max(0,hidden2[ho]);
+	}
+	//output
+	for (h = 0; h < 8; h++) {
+		output += hidden2[h]*hidden2_to_outputW[h];
+	}
+	//output *= outputW;
+	//sigmoid
+	output = sigmoid(output);
+	if(output > 0.9){
+		document.getElementById("vysledek").innerHTML = "Obrazec je na " + output*100 + " % symetrický";
+	}
+	else{
+		document.getElementById("vysledek").innerHTML = "Obrazec není moc symetrický";
+	}
+	
+	
+	input = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+	hidden1 = [0,0,0,0,0,0,0,0];
+	hidden2 = [0,0,0,0,0,0,0,0];
+	output = 0;
+}
+function sigmoid(x){
+	return 1/(1+Math.pow(Math.E,-x));
+}
+</script>
+</head>
+<body>
+
+<h1>Vyhodnocení symetrie obrazce 4x4</h1>
+
+<table>
+	<tr>
+		<td id="0"><button type="button" onclick="change(0)">0</button></td>
+		<td id="1"><button type="button" onclick="change(1)">0</button></td>
+		<td id="2"><button type="button" onclick="change(2)">0</button></td>
+		<td id="3"><button type="button" onclick="change(3)">0</button></td>
+	</tr>
+	<tr>
+		<td id="4"><button type="button" onclick="change(4)">0</button></td>
+		<td id="5"><button type="button" onclick="change(5)">0</button></td>
+		<td id="6"><button type="button" onclick="change(6)">0</button></td>
+		<td id="7"><button type="button" onclick="change(7)">0</button></td>
+	</tr>
+	<tr>
+		<td id="8"><button type="button" onclick="change(8)">0</button></td>
+		<td id="9"><button type="button" onclick="change(9)">0</button></td>
+		<td id="10"><button type="button" onclick="change(10)">0</button></td>
+		<td id="11"><button type="button" onclick="change(11)">0</button></td>
+	</tr>
+	<tr>
+		<td id="12"><button type="button" onclick="change(12)">0</button></td>
+		<td id="13"><button type="button" onclick="change(13)">0</button></td>
+		<td id="14"><button type="button" onclick="change(14)">0</button></td>
+		<td id="15"><button type="button" onclick="change(15)">0</button></td>
+	</tr>
+</table>
+
+<button type="button" onclick="vyhodnotit()">Vyhodnotit</button>
+
+<p id="vysledek">1</p>
+
+<img src="accuracy.png">
+<img src="loss.png">
+
+
+</body>
+</html> 
