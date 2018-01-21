@@ -83,6 +83,56 @@ function change(id){
 	vyhodnotit();
 }
 
+function vyhodnotitBool(){
+	//input
+	for (i = 0; i < 16; i++) {
+		if(image[i]){
+			input[i] = 1;
+		}
+		else{
+			input[i] = 0;
+		}
+	}
+	//hidden 1
+	for (h = 0; h < 8; h++) {
+		for (i = 0; i < 16; i++) {
+			hidden1[h] += input[i]*input_to_hidden1W[i][h];
+		}
+		hidden1[h] *= hidden1W[h];
+		//relu
+		hidden1[h] = Math.max(0,hidden1[h]);
+	}
+	//hidden 2
+	for (ho = 0; ho < 8; ho++) {
+		for (hi = 0; hi < 8; hi++) {
+			hidden2[ho] += hidden1[hi]*hidden1_to_hidden2W[hi][ho];
+		}
+		hidden2[ho] *= hidden2W[ho];
+		//relu
+		hidden2[ho] = Math.max(0,hidden2[ho]);
+	}
+	//output
+	for (h = 0; h < 8; h++) {
+		output += hidden2[h]*hidden2_to_outputW[h];
+	}
+	output *= outputW;
+	//sigmoid
+	output = sigmoid(output);
+	input = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+	hidden1 = [0,0,0,0,0,0,0,0];
+	hidden2 = [0,0,0,0,0,0,0,0];
+	output = 0;
+	if(output > 0.5){
+		return true;
+	}
+	else{
+		return false;
+	}
+	
+	
+	
+}
+
 function vyhodnotit(){
 	//input
 	for (i = 0; i < 16; i++) {
@@ -118,7 +168,7 @@ function vyhodnotit(){
 	//output *= outputW;
 	//sigmoid
 	output = sigmoid(output);
-	if(output > 0.9){
+	if(output > 0.5){
 		document.getElementById("vysledek").innerHTML = "Obrazec je na " + output*100 + " % symetrický";
 	}
 	else{
@@ -133,6 +183,35 @@ function vyhodnotit(){
 }
 function sigmoid(x){
 	return 1/(1+Math.pow(Math.E,-x));
+}
+
+function tests(){
+	var correct = 0;
+	var total = 0;
+	for(testNo = 0; testNo < 1000; testNo++){
+		for(i = 0; i < 16; i++){
+			image[i] = Math.random() >= 0.5;
+		}
+		var outcomeCode = true;
+		var outcomeNN = vyhodnotitBool();
+		for(row = 0; row < 4; row++){
+			if(image[0+(4*row)]!=image[3+(4*row)]){
+				outcomeCode = false;
+				break;
+			}
+			if(image[1+(4*row)]!=image[2+(4*row)]){
+				outcomeCode = false;
+				break;
+			}
+		}	
+		if(outcomeCode == outcomeNN){
+			correct++;
+		}
+		total++;
+	}
+	document.getElementById("stats").innerHTML = "Přesnost: " + correct/total*100 + "%";
+	image = [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false];
+	vykreslit();
 }
 </script>
 </head>
@@ -168,8 +247,11 @@ function sigmoid(x){
 </table>
 
 <button type="button" onclick="vyhodnotit()">Vyhodnotit</button>
+<button type="button" onclick="tests()">Otestovat přesnost</button>
 
-<p id="vysledek">1</p>
+<p id="vysledek">Obrazec je na 100% symetrický</p>
+<p id="stats">Přesnost: unknown</p>
+
 
 <img src="stats/accuracy.png">
 <img src="stats/loss.png">
